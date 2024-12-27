@@ -8,6 +8,7 @@ from datetime import datetime
 
 # 3rd Party Libraries
 import requests
+import os
 
 # Django Imports
 from django.conf import settings
@@ -32,11 +33,15 @@ class HasuraBackend(BaseHealthCheckBackend):
     """
 
     critical_service = True
+    @property
+    def graphql_host(self):
+        """Retrieve the GraphQL host from the environment variable or use the default."""
+        return os.getenv("GRAPHQL_HOST", "graphql-engine")
 
     def check_status(self):
         """Check the status of the backend service."""
         try:
-            response = requests.get("http://graphql_engine:8080/healthz")
+            response = requests.get(f"http://{graphql_host}:8080/healthz")
             if response.ok:
                 content = response.text
                 if "OK" in content:
