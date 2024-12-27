@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-queue
+  namespace: ghostwriter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-queue
+  template:
+    metadata:
+      labels:
+        app: django-queue
+    spec:
+      containers:
+      - name: queue
+        image: u37sharedinfra.azurecr.io/ghostwriter/django:1.0.2
+        imagePullPolicy: Always
+        command:
+        - /start-queue
+        env:
+        - name: MAILGUN_DOMAIN
+          value: ""
+        - name: MAILGUN_API_KEY
+          value: ""
+        - name: DATABASE_URL
+          value: postgres://postgres:bQnfkIWxKju0No5hzEI0ckk7PfbcZaFU@postgres.ghostwriter.svc.cluster.local:5432/ghostwriter
+        - name: POSTGRES_DB
+          value: ghostwriter
+        - name: DJANGO_SESSION_COOKIE_SECURE
+          value: "true"
+        - name: DJANGO_QCLUSTER_NAME
+          value: soar
+        - name: POSTGRES_HOST
+          value: postgres.ghostwriter.svc.cluster.local
+        - name: DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE
+          value: "false"
+        - name: DJANGO_SUPERUSER_EMAIL
+          value: admin@ghostwriter.local
+        - name: DJANGO_ALLOWED_HOSTS
+          value: "localhost 127.0.0.1 django nginx host.docker.internal django.ghostwriter.svc.cluster.local"
+        - name: NO_PROXY
+          value: graphql
+        - name: USE_DOCKER
+          value: "yes"
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secret-key
+              name: django-config

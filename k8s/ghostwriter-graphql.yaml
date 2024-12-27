@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql
+  namespace: ghostwriter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: graphql
+  template:
+    metadata:
+      labels:
+        app: graphql
+    spec:
+      containers:
+      - name: graphql
+        image: u37sharedinfra.azurecr.io/ghostwriter/graphql:1.0.1
+        imagePullPolicy: Always
+        env:
+        - name: HASURA_GRAPHQL_LOG_LEVEL
+          value: warn
+        - name: NO_PROXY
+          value: django
+        - name: HASURA_GRAPHQL_INSECURE_SKIP_TLS_VERIFY
+          value: "true"
+        - name: HASURA_GRAPHQL_DEV_MODE
+          value: "false"
+        - name: HASURA_GRAPHQL_METADATA_DIR
+          value: /metadata
+        - name: HASURA_GRAPHQL_DATABASE_URL
+          value: postgres://postgres:bQnfkIWxKju0No5hzEI0ckk7PfbcZaFU@postgres.ghostwriter.svc.cluster.local:5432/ghostwriter
+        - name: HASURA_GRAPHQL_CONSOLE_ASSETS_DIR
+          value: /srv/console-assets
+        - name: HASURA_GRAPHQL_SERVER_PORT
+          value: "8080"
+        - name: HASURA_GRAPHQL_ENABLE_TELEMETRY
+          value: "false"
+        - name: HASURA_GRAPHQL_MIGRATIONS_DIR
+          value: /migrations
+        - name: HASURA_ACTION_SECRET
+          value: r3GgkwQxNnwbplbat1s5WidqMJpgW7fg
+        - name: HASURA_GRAPHQL_ADMIN_SECRET
+          value: 0ArYGSeJxoPR60AQDsLmh0hsh5xibG0y
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql_engine
+  namespace: ghostwriter
+spec:
+  clusterIP: None
+  selector:
+    app: graphql
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
